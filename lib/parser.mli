@@ -8,7 +8,13 @@ val error_of_token : string -> Lexer.token -> string
 
 exception Parsing_error of string
 
-type expr = Num of int | Binop of op * expr * expr | Var of string
+type expr = Num of int | Binop of op * expr * expr | Var of quantified
+
+and quantified = Quant of string
+
+and quantifier = 
+  | Forall of quantified list
+  | Exists of quantified list
 
 and op = Add | Sub | Mult
 

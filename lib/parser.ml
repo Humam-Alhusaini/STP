@@ -58,7 +58,9 @@ exception Parsing_error of string;;
 type expr = 
   | Num of int
   | Binop of op * expr * expr
-  | Var of string
+  | Var of quantified
+
+and quantified = Quant of string
 
 and op = 
   | Add
@@ -69,6 +71,10 @@ and comp =
   | Eq of expr * expr
 
 and lemma = string * comp
+
+and quantifier = 
+  | Forall of quantified list
+  | Exists of quantified list
 
 and tactic = 
   | Reflexivity
@@ -111,7 +117,7 @@ class parse_lemma (tokens : token list) = object (self)
     match toks with
     | [] -> Parsing_error "Where the helly are the tokens" |> raise
     | (NUM x, _) :: _ -> self#shift (); parse_binop (Num x) 
-    | (VAR x, _) :: _ -> self#shift (); parse_binop (Var x) 
+    | (VAR x, _) :: _ -> self#shift (); parse_binop (Var (Quant x)) 
     | _ -> Parsing_error "Anomalous op" |> raise
 
   method parse_comp : comp = 

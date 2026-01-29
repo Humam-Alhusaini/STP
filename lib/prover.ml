@@ -9,20 +9,23 @@ let apply_reflexivity (nm, comp) =
   match comp with
   | Eq (expr1, expr2) -> if expr1 = expr2 then Solved_lemma (nm, comp) |> raise else (nm, comp);;
 
-let rec simplify_expr expr = 
+let rec simplify_expr expr : expr = 
 
-  let match_op op expr1 expr2 = 
+  let match_op op num1 num2 = 
     match op with
-    | Add -> (simplify_expr expr2 + simplify_expr expr1)
-    | Sub -> (simplify_expr expr2 - simplify_expr expr1)
-    | Mult -> (simplify_expr expr2 * simplify_expr expr1) in
+    | Add -> num1 + num2
+    | Sub -> num1 - num2
+    | Mult -> num1 * num2 in
+
   match expr with
-  | Binop (op, expr1, expr2) -> match_op op expr1 expr2
-  | Num y -> y;;
+  | Binop (op, Num num1, Num num2) -> Num (match_op op num1 num2)
+  | Binop (op, expr1, expr2) -> Binop (op, simplify_expr expr1, simplify_expr expr2)
+  | Num y -> Num y
+  | Var x -> Var x ;;
 
 let apply_simpl (nm, comp) = 
   match comp with
-  | Eq (expr1, expr2) -> (nm, Eq (Num (simplify_expr expr1), Num (simplify_expr expr2)));;
+  | Eq (expr1, expr2) -> (nm, Eq (simplify_expr expr1, simplify_expr expr2));;
 
 let apply_tactic tac lemma : lemma = 
   match tac with
