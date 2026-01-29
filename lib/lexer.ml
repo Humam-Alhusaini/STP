@@ -45,7 +45,7 @@ let string_to_tac str : Tokens.t =
   | "RIGHT" -> RIGHT
   | "REFLEXIVITY" -> REFLEXIVITY
   | "SIMPL" -> SIMPL
-  | _ -> Var str;;
+  | _ -> VAR str;;
 
 let string_to_tok str : Tokens.t = 
   match str with
@@ -117,10 +117,10 @@ method tokenize (tokens : token list) : token list =
       | '0' .. '9' -> chars @ [char] |> tokenize_num 
       | _ -> cursor#shiftl ();
             let final_num = chars |> string_of_chars |> int_of_string in
-            let token = Num final_num in token end
+            let token = NUM final_num in token end
     else
       let final_num = chars |> string_of_chars |> int_of_string in
-        let token = Num final_num in token
+        let token = NUM final_num in token
           in
 
   let rec tokenize_word (chars : char list) : Tokens.t = 

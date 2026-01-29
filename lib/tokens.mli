@@ -1,6 +1,6 @@
 type t =
-    Num of int
-  | Var of string
+    NUM of int
+  | VAR of string
   | MULT
   | PLUS
   | SUB

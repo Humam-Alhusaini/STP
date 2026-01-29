@@ -4,8 +4,8 @@ open Printf
 
 let format_tok (tok : Tokens.t) = 
   match tok with
-  | Num i -> sprintf "NUM(%i)" i
-  | Var s -> sprintf "VAR(%s)" s
+  | NUM i -> sprintf "NUM(%i)" i
+  | VAR s -> sprintf "VAR(%s)" s
   | MULT -> "MULT"
   | PLUS -> "PLUS"
   | SUB -> "SUB"
@@ -58,6 +58,7 @@ exception Parsing_error of string;;
 type expr = 
   | Num of int
   | Binop of op * expr * expr
+  | Var of string
 
 and op = 
   | Add
@@ -100,7 +101,7 @@ class parse_lemma (tokens : token list) = object (self)
            in
 
       match toks with
-      | (((MULT | PLUS | SUB) as op), _) :: (Tokens.Num y, _) :: _ -> 
+      | (((MULT | PLUS | SUB) as op), _) :: (NUM y, _) :: _ -> 
           self#shift_n 2; Binop(match_op op, start, Num y) |> parse_binop
       | ((MULT | PLUS | SUB), _) :: _ -> 
           Parsing_error "I expect a number after an operator" |> raise
@@ -109,7 +110,8 @@ class parse_lemma (tokens : token list) = object (self)
     
     match toks with
     | [] -> Parsing_error "Where the helly are the tokens" |> raise
-    | (Tokens.Num x, _) :: _ -> self#shift (); parse_binop (Num x) 
+    | (NUM x, _) :: _ -> self#shift (); parse_binop (Num x) 
+    | (VAR x, _) :: _ -> self#shift (); parse_binop (Var x) 
     | _ -> Parsing_error "Anomalous op" |> raise
 
   method parse_comp : comp = 
@@ -126,7 +128,7 @@ class parse_lemma (tokens : token list) = object (self)
 
   method parse_lemma : lemma = 
     match toks with
-    | (LEMMA, _) :: (Var str, _) :: (COLON, _) :: _ -> self#shift_n 3; let lem = (str, self#parse_comp) in self#end_of_lemma; lem
+    | (LEMMA, _) :: (VAR str, _) :: (COLON, _) :: _ -> self#shift_n 3; let lem = (str, self#parse_comp) in self#end_of_lemma; lem
     | (LEMMA, _) ::  _ ->  Parsing_error "Where's the name" |> raise
     | [] -> Parsing_error "Expect lemma, got nothing" |> raise
     | hd :: _ -> Parsing_error (error_of_token "Expected lemma" hd) |> raise

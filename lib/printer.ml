@@ -3,8 +3,8 @@ open Parser
 
 let format_tok (tok : Tokens.t) = 
   match tok with
-  | Num i -> sprintf "NUM(%i)" i
-  | Var s -> sprintf "VAR(%s)" s
+  | NUM i -> sprintf "NUM(%i)" i
+  | VAR s -> sprintf "VAR(%s)" s
   | MULT -> "MULT"
   | PLUS -> "PLUS"
   | SUB -> "SUB"

@@ -8,7 +8,7 @@ val error_of_token : string -> Lexer.token -> string
 
 exception Parsing_error of string
 
-type expr = Num of int | Binop of op * expr * expr
+type expr = Num of int | Binop of op * expr * expr | Var of string
 
 and op = Add | Sub | Mult
 
