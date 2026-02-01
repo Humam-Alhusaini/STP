@@ -73,4 +73,23 @@ let rec get_lemma () =
          | Solved_lemma (nm, _) -> printf "\nSolved Theorem %s! Enter another lemma!\n" nm; get_lemma ()
          | e -> Printexc.to_string e |> printf "ANOMALY: %s\n"; get_lemma ();;
 
+let interp_def str =
+  try
+    let lex = new lexer str in
+      let tokens = lex#tokenize [] in 
+        let pars = new parse_def tokens in
+          let _ = pars#parse_def in ()
+  with 
+  | Parsing_error err -> printf "%s\n" err
+  | Lexing_error (err, toks, pos) -> 
+      printf "LEXING ERROR at line %d, offset %d: %s\n\n\n" pos.line_num pos.bol_off err;
+      print_string "Printing retrieved tokens...\n\n";
+      print_tokens toks;;
 
+let rec get_defs () =
+  print_string ">>> ";
+  let txt = read_line () in
+  match txt with
+  | "exit" -> print_endline "Goodbye!"
+  | _ -> interp_def txt; get_defs ();
+      

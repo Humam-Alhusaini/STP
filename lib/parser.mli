@@ -24,6 +24,19 @@ and lemma = string * comp
 
 and tactic = Reflexivity | Simpl
 
+and def = string * expr
+
+class parse_def :
+  Lexer.token list ->
+  object
+    val mutable toks : Lexer.token list
+    method end_of_def : unit
+    method parse_expr : expr
+    method parse_def : def
+    method shift : unit -> unit
+    method shift_n : int -> unit
+  end
+
 class parse_lemma :
   Lexer.token list ->
   object

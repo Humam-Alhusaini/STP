@@ -10,3 +10,7 @@ val prove_lemma : Parser.lemma -> unit
 val interp : string -> unit
 
 val get_lemma : unit -> unit
+
+val interp_def : string -> unit
+
+val get_defs : unit -> unit

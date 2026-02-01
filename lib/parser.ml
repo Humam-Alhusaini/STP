@@ -78,7 +78,63 @@ and quantifier =
 
 and tactic = 
   | Reflexivity
-  | Simpl;;
+  | Simpl
+
+and def = string * expr;;
+
+class parse_def (tokens : token list) = object (self)
+
+  val mutable toks = tokens
+
+  method shift () =
+   match toks with
+   | [] -> Parsing_error "No more" |> raise
+   | _ :: ls -> toks <- ls
+
+  method shift_n num =
+    let rec loop num =
+      if num > 0 then begin
+        self#shift (); loop (num-1) end
+      else () in loop num
+  
+  method parse_expr : expr = 
+    
+    let rec parse_binop (start : expr) : expr =
+      
+        let match_op op = 
+          match op with
+          | MULT -> Mult
+          | PLUS -> Add
+          | SUB -> Sub
+           in
+
+      match toks with
+      | ((MULT | PLUS | SUB) as op, _) :: tok :: _ -> 
+            (match tok with
+            | (NUM y, _) -> self#shift_n 2; Binop(match_op op, start, Num y) |> parse_binop
+            | (VAR y, _) -> self#shift_n 2; Binop(match_op op, start, Var y) |> parse_binop
+            | _ -> Parsing_error "I expect a value after an operator" |> raise)
+      | _ -> start
+       in
+    
+    match toks with
+    | [] -> Parsing_error "Where the helly are the tokens" |> raise
+    | (NUM x, _) :: _ -> self#shift (); parse_binop (Num x) 
+    | (VAR x, _) :: _ -> self#shift (); parse_binop (Var x) 
+    | _ -> Parsing_error "Anomalous op" |> raise
+
+  method end_of_def : unit = 
+    match toks with
+    | hd :: _ -> Parsing_error (error_of_token "Did not end def correctly" hd) |> raise
+    | [] -> ()
+
+  method parse_def : def = 
+    match toks with
+    | (DEFINITION, _) :: (VAR str, _) :: (COLON, _) :: (EQ, _) :: _ -> self#shift_n 4; let def = (str, self#parse_expr) in self#end_of_def; def
+    | (DEFINITION, _) ::  _ ->  Parsing_error "Where's the name" |> raise
+    | [] -> Parsing_error "Expect def, got nothing" |> raise
+    | hd :: _ -> Parsing_error (error_of_token "Expected def" hd) |> raise
+end
 
 class parse_lemma (tokens : token list) = object (self)
 
@@ -107,7 +163,7 @@ class parse_lemma (tokens : token list) = object (self)
            in
 
       match toks with
-      | (((MULT | PLUS | SUB) as op), _) :: tok :: _ -> 
+      | ((MULT | PLUS | SUB) as op, _) :: tok :: _ -> 
             (match tok with
             | (NUM y, _) -> self#shift_n 2; Binop(match_op op, start, Num y) |> parse_binop
             | (VAR y, _) -> self#shift_n 2; Binop(match_op op, start, Var y) |> parse_binop
