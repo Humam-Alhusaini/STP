@@ -60,7 +60,7 @@ let rec fexpr expr =
   | Num n -> sprintf "%d" n
   | Binop (op, expr1, expr2) -> 
       sprintf "(%s %s %s)" (fexpr expr1) (fop op) (fexpr expr2)
-  | Var (Quant str) -> sprintf "%s" str;;
+  | Var str -> sprintf "%s" str;;
 
 let fcomp comp = 
   match comp with

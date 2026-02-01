@@ -60,7 +60,7 @@ type expr =
   | Binop of op * expr * expr
   | Var of quantified
 
-and quantified = Quant of string
+and quantified = string
 
 and op = 
   | Add
@@ -107,17 +107,18 @@ class parse_lemma (tokens : token list) = object (self)
            in
 
       match toks with
-      | (((MULT | PLUS | SUB) as op), _) :: (NUM y, _) :: _ -> 
-          self#shift_n 2; Binop(match_op op, start, Num y) |> parse_binop
-      | ((MULT | PLUS | SUB), _) :: _ -> 
-          Parsing_error "I expect a number after an operator" |> raise
+      | (((MULT | PLUS | SUB) as op), _) :: tok :: _ -> 
+            (match tok with
+            | (NUM y, _) -> self#shift_n 2; Binop(match_op op, start, Num y) |> parse_binop
+            | (VAR y, _) -> self#shift_n 2; Binop(match_op op, start, Var y) |> parse_binop
+            | _ -> Parsing_error "I expect a value after an operator" |> raise)
       | _ -> start
        in
     
     match toks with
     | [] -> Parsing_error "Where the helly are the tokens" |> raise
     | (NUM x, _) :: _ -> self#shift (); parse_binop (Num x) 
-    | (VAR x, _) :: _ -> self#shift (); parse_binop (Var (Quant x)) 
+    | (VAR x, _) :: _ -> self#shift (); parse_binop (Var x) 
     | _ -> Parsing_error "Anomalous op" |> raise
 
   method parse_comp : comp = 

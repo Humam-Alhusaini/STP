@@ -10,7 +10,7 @@ exception Parsing_error of string
 
 type expr = Num of int | Binop of op * expr * expr | Var of quantified
 
-and quantified = Quant of string
+  and quantified = string
 
 and quantifier = 
   | Forall of quantified list
